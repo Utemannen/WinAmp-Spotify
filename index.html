@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>WINAMP SPOTIFY</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#000;color:#d8d8df;font-family:Tahoma,Arial,sans-serif;height:100%;overflow:auto}
+body{display:flex;justify-content:center;padding:8px}
+#app{width:min(980px,100%);min-width:320px}
+.win{background:linear-gradient(#454556,#20212e 12%,#242536);border:3px solid #0b0b10;outline:1px solid #77788a;box-shadow:inset 0 0 0 1px #111;margin-bottom:7px}
+.bar{height:31px;display:flex;align-items:center;padding:0 7px;color:#e9e9ef;font:bold 16px monospace;letter-spacing:1px}
+.bar:before,.bar:after{content:"";height:4px;flex:1;border-top:2px solid #fff1a0;border-bottom:2px solid #8d6d00;box-shadow:0 0 0 1px #111;margin:0 14px}
+.bar .x{margin-left:10px;color:#ffd92e;font-size:20px}
+.main{padding:9px;display:grid;grid-template-columns:38% 62%;gap:8px}
+.display{background:#000;border:3px inset #666;padding:8px;min-height:155px;font-family:monospace;color:#19ff00;position:relative;overflow:hidden}
+.display .time{font-size:39px;line-height:1;margin:8px 0;color:#25ff00;text-shadow:0 0 5px #0f0}
+.display .title{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.display .artist{font-size:13px;color:#a5ff8e;margin-top:5px}
+.display .small{font-size:11px;color:#83ff6b;margin-top:9px}
+#meter{width:100%;height:55px;margin-top:7px}
+.info{display:grid;grid-template-columns:auto 1fr;gap:7px;margin-top:8px}
+.cover{width:78px;height:78px;object-fit:cover;background:#111;border:2px solid #555}
+.meta{font:12px monospace;color:#ddd;line-height:1.55}
+.slider{height:13px;background:#111;border:2px inset #666;position:relative;margin:8px 0}
+.slider i{display:block;height:100%;width:60%;background:linear-gradient(90deg,#16ff00,#f2ff00,#ff9c00)}
+.buttons{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+button{font:bold 13px Tahoma,Arial;background:linear-gradient(#f2f6fa,#9ba6b8);border:2px solid #39404d;border-top-color:#fff;border-left-color:#fff;padding:7px 11px;color:#111;box-shadow:inset 0 0 0 1px #687080}
+button:active,button.on{background:linear-gradient(#9ba6b8,#f2f6fa);border-top-color:#39404d;border-left-color:#39404d}
+button:disabled{opacity:.45}
+.eq{padding:8px}.eqrow{display:grid;grid-template-columns:72px repeat(10,1fr);gap:7px;align-items:end;height:245px}
+.eqcell{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.eqcell label{font:12px monospace;color:#fff;margin-top:5px}
+.eqtrack{height:170px;width:12px;background:#111;border:2px inset #666;position:relative}
+.eqtrack input{appearance:none;writing-mode:vertical-lr;direction:rtl;width:166px;height:12px;transform:rotate(270deg) translateX(-77px);transform-origin:left top}
+input[type=range]{accent-color:#f2d400}
+.eqname{font:11px monospace;color:#ffe900;margin-bottom:5px}
+.play{padding:8px}.list{background:#000;border:3px inset #666;height:315px;overflow:auto;font:15px monospace;color:#19ff00}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;padding:5px 7px;border-bottom:1px solid #151515;cursor:pointer}
+.item:hover{background:#073900}.item.active{background:#18b900;color:#000}
+.bottom{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.status{font:11px monospace;color:#77ff5d;margin-top:6px}
+#search{flex:1;min-width:160px;background:#000;color:#19ff00;border:2px inset #777;padding:7px;font:13px monospace}
+@media(max-width:720px){.main{grid-template-columns:1fr}.eqrow{height:210px}.eqtrack{height:135px}.list{height:260px}.display{min-height:130px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <section class="win">
+    <div class="bar"><span>WINAMP</span><span class="x">_ □ X</span></div>
+    <div class="main">
+      <div>
+        <div class="display">
+          <div id="time" class="time">00:00</div>
+          <div id="title" class="title">SPOTIFY // NOT CONNECTED</div>
+          <div id="artist" class="artist">Connect Spotify to use the player</div>
+          <canvas id="meter"></canvas>
+          <div id="quality" class="small">128 kbps&nbsp;&nbsp;44 kHz&nbsp;&nbsp;stereo</div>
+          <div class="slider"><i id="progress"></i></div>
+          <div class="buttons">
+            <button id="prev">|◀</button><button id="play">▶</button><button id="pause">❚❚</button><button id="next">▶|</button>
+            <button id="shuffle">SHUFFLE</button><button id="repeat">↻</button>
+          </div>
+        </div>
+        <div class="buttons">
+          <button id="connect">CONNECT SPOTIFY</button>
+          <button id="logout">LOG OUT</button>
+        </div>
+        <div class="status" id="status">Demo display is ready.</div>
+      </div>
+      <div>
+        <div class="info">
+          <img id="cover" class="cover" alt="">
+          <div class="meta">
+            <b>WINAMP SPOTIFY EDITION</b><br>
+            Spotify Web Playback / Connect<br>
+            <span id="user">Not connected</span><br>
+            <span id="device">No player device</span>
+          </div>
+        </div>
+        <div class="buttons">
+          <button id="eqBtn">EQ</button><button id="plBtn">PL</button>
+          <input id="search" placeholder="Search Spotify...">
+          <button id="searchBtn">SEARCH</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="win" id="eqPanel">
+    <div class="bar"><span>WINAMP EQUALIZER</span><span class="x">_ □ X</span></div>
+    <div class="eq">
+      <div class="buttons"><button id="eqOn" class="on">ON</button><button id="eqAuto">AUTO</button><button id="preset">PRESETS</button></div>
+      <div class="eqrow" id="eqrow"></div>
+    </div>
+  </section>
+
+  <section class="win" id="plPanel">
+    <div class="bar"><span>WINAMP PLAYLIST</span><span class="x">_ □ X</span></div>
+    <div class="play">
+      <div class="list" id="list"></div>
+      <div class="bottom">
+        <button id="add">ADD</button><button id="remove">REM</button><button id="select">SEL</button><button id="misc">MISC</button>
+        <span style="margin-left:auto;font:14px monospace;color:#19ff00" id="pltime">00:00 / 00:00</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="win" id="settings">
+    <div class="bar"><span>SPOTIFY SETTINGS</span><span class="x">_ □ X</span></div>
+    <div style="padding:9px;font:12px monospace">
+      <label>Spotify Client ID</label><br>
+      <input id="clientId" style="width:100%;padding:7px;background:#000;color:#19ff00;border:2px inset #777" placeholder="Lim inn Client ID fra Spotify Developer Dashboard">
+      <p>Redirect URI for denne siden må være registrert nøyaktig i Spotify Developer Dashboard. Denne appen bruker PKCE, så ingen Client Secret legges inn her.</p>
+    </div>
+  </section>
+</div>
+
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const redirectUri=location.origin+location.pathname;
+let token=localStorage.getItem("wa_token")||"", clientId=localStorage.getItem("wa_client")||"";
+$("clientId").value=clientId;
+
+const bands=["PRE","70","180","320","600","1K","3K","6K","12K","14K","16K"];
+$("eqrow").innerHTML=bands.map((b,i)=>`<div class="eqcell"><div class="eqname">${b}</div><div class="eqtrack"><input data-i="${i}" type="range" min="-12" max="12" value="${i?0:0}"></div></div>`).join("");
+
+let demoSongs=[
+ ["Journey","Separate Ways (Worlds Apart)","5:24"],
+ ["Foo Fighters","Everlong","4:10"],
+ ["Queens of the Stone Age","No One Knows","4:38"],
+ ["John Moreland","You Don't Care For Me Enough to Cry","4:26"],
+ ["Jason Isbell","If We Were Vampires","3:34"],
+ ["The Black Keys","Gold on the Ceiling","3:44"],
+ ["Zach Bryan","Something in the Orange","3:48"],
+ ["Arctic Monkeys","Do I Wanna Know?","4:32"],
+ ["Rammstein","Du hast","3:54"],
+ ["Nine Inch Nails","Closer","6:13"]
+];
+let current=0, playing=false, shuffle=false, repeat=false, player=null,deviceId=null;
+function renderList(rows=demoSongs){
+ $("list").innerHTML=rows.map((s,i)=>`<div class="item ${i===current?'active':''}" data-i="${i}"><span>${i+1}. ${s[0]} - ${s[1]}</span><span>${s[2]||""}</span></div>`).join("");
+ [...$("list").children].forEach(el=>el.onclick=()=>playIndex(+el.dataset.i));
+}
+renderList();
+
+function setStatus(t){$("status").textContent=t}
+function b64url(a){return btoa(String.fromCharCode(...new Uint8Array(a))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function random(n=64){const a=new Uint8Array(n);crypto.getRandomValues(a);return b64url(a)}
+async function challenge(v){return b64url(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v)))}
+
+async function login(){
+ clientId=$("clientId").value.trim(); if(!clientId){alert("Lim inn Spotify Client ID først.");return}
+ localStorage.setItem("wa_client",clientId);
+ const verifier=random(); localStorage.setItem("wa_verifier",verifier);
+ const state=random(24); localStorage.setItem("wa_state",state);
+ const scope=["streaming","user-read-email","user-read-private","user-read-playback-state","user-modify-playback-state","user-read-currently-playing","playlist-read-private","playlist-read-collaborative"].join(" ");
+ const url=new URL("https://accounts.spotify.com/authorize");
+ url.search=new URLSearchParams({response_type:"code",client_id:clientId,scope,redirect_uri:redirectUri,state,code_challenge_method:"S256",code_challenge:await challenge(verifier)}).toString();
+ location.href=url;
+}
+async function callback(){
+ const p=new URLSearchParams(location.search), code=p.get("code"), state=p.get("state");
+ if(!code)return;
+ if(state!==localStorage.getItem("wa_state")){setStatus("OAuth state mismatch.");return}
+ const verifier=localStorage.getItem("wa_verifier");
+ const r=await fetch("https://accounts.spotify.com/api/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({client_id:clientId,grant_type:"authorization_code",code,redirect_uri:redirectUri,code_verifier:verifier})});
+ const j=await r.json(); if(!j.access_token){setStatus("Spotify token error: "+(j.error||"unknown"));return}
+ token=j.access_token;localStorage.setItem("wa_token",token);history.replaceState({},document.title,redirectUri);startPlayer();
+}
+async function api(path,opts={}){const r=await fetch("https://api.spotify.com/v1"+path,{...opts,headers:{Authorization:"Bearer "+token,...(opts.headers||{})}});if(r.status===204)return null;if(r.status===401){token="";localStorage.removeItem("wa_token");throw Error("Spotify login expired")}return r.json()}
+async function loadProfile(){try{const p=await api("/me");$("user").textContent=p.display_name||p.id}catch(e){}}
+function startPlayer(){
+ if(!token||!window.Spotify){setStatus("Waiting for Spotify player...");return}
+ player=new Spotify.Player({name:"WINAMP Spotify",getOAuthToken:cb=>cb(token),volume:.75});
+ player.addListener("ready",({device_id})=>{deviceId=device_id;$("device").textContent="WINAMP device ready";setStatus("Spotify connected.");api("/me/player",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({device_ids:[deviceId],play:true})}).catch(()=>{})});
+ player.addListener("player_state_changed",s=>{if(!s)return;const tr=s.track_window.current_track; $("title").textContent=tr.name;$("artist").textContent=tr.artists.map(a=>a.name).join(", ");$("cover").src=tr.album.images?.[0]?.url||"";$("time").textContent=fmt(s.position);$("progress").style.width=(s.duration?s.position/s.duration*100:0)+"%";playing=!s.paused;$("play").textContent=playing?"❚❚":"▶";});
+ player.addListener("initialization_error",e=>setStatus("Player: "+e.message));
+ player.addListener("authentication_error",e=>setStatus("Auth: "+e.message));
+ player.addListener("account_error",e=>setStatus("Spotify account: "+e.message));
+ player.connect();
+ loadProfile(); loadCurrent();
+}
+window.onSpotifyWebPlaybackSDKReady=()=>{if(token)startPlayer()};
+async function loadCurrent(){try{const s=await api("/me/player");if(s?.item){$("title").textContent=s.item.name;$("artist").textContent=s.item.artists.map(a=>a.name).join(", ");$("cover").src=s.item.album.images?.[0]?.url||"";$("time").textContent=fmt(s.progress_ms||0)}}catch(e){}}
+function fmt(ms){let n=Math.floor(ms/1000);return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0")}
+async function control(method,body){if(!token){setStatus("Connect Spotify first.");return}try{await api("/me/player/"+method,{method:"PUT",headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined})}catch(e){setStatus(e.message)}}
+$("connect").onclick=login;$("logout").onclick=()=>{localStorage.removeItem("wa_token");location.reload()};
+$("play").onclick=()=>player?player.togglePlay():control("play");$("pause").onclick=()=>player?player.pause():control("pause");
+$("next").onclick=()=>player?player.nextTrack():control("next");$("prev").onclick=()=>player?player.previousTrack():control("previous");
+$("shuffle").onclick=async()=>{shuffle=!shuffle;$("shuffle").classList.toggle("on",shuffle);if(token)await api("/me/player",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({state:shuffle})}).catch(()=>{})};
+$("repeat").onclick=()=>{repeat=!repeat;$("repeat").classList.toggle("on",repeat);if(token)api("/me/player/repeat?state="+(repeat?"context":"off"),{method:"PUT"}).catch(()=>{})};
+async function playIndex(i){
+ current=i;renderList();
+ if(token){
+   const q=encodeURIComponent("track:"+demoSongs[i][1]+" artist:"+demoSongs[i][0]);
+   try{const r=await api("/search?type=track&limit=1&q="+q);const u=r.tracks.items[0]?.uri;if(u)await api("/me/player/play",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({uris:[u]})})}catch(e){setStatus(e.message)}
+ }else{$("title").textContent=demoSongs[i][1];$("artist").textContent=demoSongs[i][0]}
+}
+$("searchBtn").onclick=async()=>{if(!token){setStatus("Connect Spotify to search.");return}let q=encodeURIComponent($("search").value.trim());if(!q)return;try{const r=await api("/search?type=track&limit=20&q="+q);const rows=r.tracks.items.map(t=>[t.artists.map(a=>a.name).join(", "),t.name,fmt(t.duration_ms)]);demoSongs=rows;current=0;renderList(rows);setStatus(rows.length+" Spotify tracks found.")}catch(e){setStatus(e.message)}};
+$("eqBtn").onclick=()=>{$("eqPanel").scrollIntoView({behavior:"smooth"})};$("plBtn").onclick=()=>{$("plPanel").scrollIntoView({behavior:"smooth"})};
+$("eqOn").onclick=()=>$("eqOn").classList.toggle("on");$("eqAuto").onclick=()=>document.querySelectorAll(".eqtrack input").forEach((r,i)=>r.value=Math.round(Math.sin(i)*5));
+$("preset").onclick=()=>{const vals=[0,4,3,1,0,-2,-1,2,4,3,1];document.querySelectorAll(".eqtrack input").forEach((r,i)=>r.value=vals[i])};
+$("add").onclick=()=>{const a=prompt("Artist?");const t=prompt("Låt?");if(a&&t){demoSongs.push([a,t,""]);renderList()}};
+$("remove").onclick=()=>{if(demoSongs.length){demoSongs.splice(current,1);current=Math.max(0,current-1);renderList()}};
+$("select").onclick=()=>document.querySelectorAll(".item").forEach(e=>e.classList.toggle("active"));
+$("misc").onclick=()=>alert("WINAMP MISC: playlist controls are active. Spotify playback uses Spotify's own audio engine.");
+
+callback();
+
+let c=$("meter"),ctx=c.getContext("2d"),phase=0;
+function resize(){c.width=c.clientWidth*devicePixelRatio;c.height=c.clientHeight*devicePixelRatio}
+addEventListener("resize",resize);resize();
+function draw(){phase+=.08;ctx.fillStyle="#000";ctx.fillRect(0,0,c.width,c.height);let n=32,w=c.width/n;
+for(let i=0;i<n;i++){let h=(.15+.75*Math.abs(Math.sin(phase+i*.55))*(.4+.6*Math.abs(Math.sin(phase*.37+i))))*c.height;ctx.fillStyle=i%3?"#20ff00":"#efff00";ctx.fillRect(i*w+2,c.height-h,w-4,h)}
+requestAnimationFrame(draw)}draw();
+setInterval(()=>{if(token&&player)loadCurrent()},4000);
+</script>
+</body></html>
